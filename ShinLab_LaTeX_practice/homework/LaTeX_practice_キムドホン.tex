@@ -1,0 +1,428 @@
+\documentclass[a4paper,twocolumn,pdflatex,ja=standard]{bxjsarticle}
+% a4jでは画像挿入時に問題が起こる場合があるため，a4paperを使用する．
+
+% ===== 基本 =====
+\geometry{
+    reset,
+    a4paper,
+    left=2.0cm,
+    right=2.0cm,
+    top=2.0cm,
+    bottom=2.0cm
+}
+\usepackage{amsmath,amssymb,mathtools,bm}
+\usepackage{graphicx}
+\usepackage{xcolor}
+\usepackage{url}
+\usepackage{wrapfig}
+\usepackage{enumitem}
+\usepackage{listings}
+\usepackage{booktabs}
+\usepackage{cuted}
+\usepackage{capt-of}
+
+% ===== TikZ・図 =====
+\usepackage{tikz}
+\usetikzlibrary{positioning}
+\usepackage{pgfplots}
+\pgfplotsset{compat=1.18}
+
+% ===== 化学 =====
+\usepackage[version=4]{mhchem}
+\usepackage{chemfig}
+
+% ===== 回路 =====
+\usepackage{circuitikz}
+
+% ===== アルゴリズム =====
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+
+% ===== 数学補助 =====
+% \numberwithin{equation}{section}
+\renewcommand{\theequation}{\arabic{equation}}
+
+\DeclareMathOperator{\sgn}{sgn}
+\DeclareMathOperator{\tr}{tr}
+\DeclareMathOperator{\diag}{diag}
+
+\newcommand{\dif}{\mathrm{d}}
+\newcommand{\ee}{\mathrm{e}}
+\newcommand{\ii}{\mathrm{i}}
+
+\newcommand{\pd}[2]{\frac{\partial{#1}}{\partial{#2}}}
+\newcommand{\pdd}[2]{\frac{\partial^2{#1}}{\partial{#2}^2}}
+\newcommand{\dd}[2]{\frac{\mathrm{d} #1}{\mathrm{d} #2}}
+
+\newcommand{\vect}[1]{\bm{#1}}
+\newcommand{\tensor}[1]{\bm{#1}}
+
+% 画像がまだ配置されていない場合も，文書全体はコンパイルできるようにする．
+% 指定した画像が存在すれば，通常どおりその画像を表示する．
+\newcommand{\practiceimage}[2][\linewidth]{%
+  \IfFileExists{#2}{%
+    \includegraphics[width=#1]{#2}%
+  }{%
+    \fbox{%
+      \parbox[c][28mm][c]{.9\dimexpr#1\relax}{%
+        \centering\small
+        画像ファイル\\未配置%
+      }%
+    }%
+  }%
+}
+
+\lstset{
+    language=C,
+    basicstyle=\ttfamily\small,
+    numbers=left,
+    numberstyle=\tiny\color{gray},
+    frame=single,
+    rulecolor=\color{black},
+    backgroundcolor=\color{gray!10},
+    breaklines=true,
+    showstringspaces=false,
+    columns=fullflexible,
+    keywordstyle=\color{blue},
+    commentstyle=\color{green!50!black},
+    stringstyle=\color{red},
+    tabsize=4
+}
+
+\setlist[itemize]{topsep=4pt,itemsep=2pt,leftmargin=*}
+\setlist[enumerate]{topsep=4pt,itemsep=2pt,leftmargin=*}
+\setlength{\columnsep}{8mm}
+\setlength{\emergencystretch}{1em}
+\raggedbottom{}
+
+\title{%
+LaTeX演習用
+% ここに自分で新しいテーマを付けてみる．テーマは自由である．
+}
+% ここを自分の名前に変更する．
+\author{キムドホン}
+% \date{\today}とすると，コンパイルした日付が入る．
+\date{\today}
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+入退室管理システムが広く利用されている。
+人物属性認識技術を組み合わせることで，帽子や眼鏡，バッグ，服装などの情報を取得できるため，人物照合の精度をさらに向上させることが可能となる。
+このような複数の特徴情報を統合することで，従来の単一特徴に依存した認識方式よりも，高精度かつ安定した入退室管理システムの実現が期待される。
+\end{abstract}
+% 演習3：Abstractの挿入
+% \begin{abstract} ... \end{abstract}を\maketitleの後へ追加する．
+
+\section*{演習1：動作確認}
+GitHubからこの「\texttt{LaTeX\_practice.tex}」をダウンロードし，
+自分のPCでコンパイルしてみましょう．
+正しくコンパイルできれば，PDFが生成されます．
+
+\section*{演習2：テーマの変更}
+タイトルと著者名を自分のものに変更し，\texttt{date}には\verb|\today|を入れて，
+コンパイルしてみましょう．
+
+\section*{演習3：Abstractの挿入}
+Abstractを挿入することで，論文の概要を簡潔にまとめることができます．
+
+\begin{verbatim}
+\begin{abstract}
+ここにAbstractを記述します．
+\end{abstract}
+\end{verbatim}
+
+実際に，このコードを\verb|\maketitle|の後へ挿入してみましょう．
+
+\section*{演習4：数式の挿入}
+LaTeXでは，数式を美しく記述することができます．
+数式の記述には，インライン数式とディスプレイ数式の2種類があります．
+
+\subsection*{インライン数式}
+円の面積は $S=\pi r^2$ で表される．
+
+オイラーの公式は $e^{i\pi}+1=0$ である．
+
+関数 $f(x)=x^2+2x+1$ を考える．
+
+\subsection*{ディスプレイ数式}
+\begin{equation}
+\int_{0}^{1} x^2\,\dif x=\frac{1}{3}
+\label{eq:integral}
+\end{equation}
+
+\begin{equation}
+A=
+\begin{pmatrix}
+1 & 2\\
+3 & 4
+\end{pmatrix}
+\label{eq:matrix}
+\end{equation}
+
+\begin{equation}
+\lim_{n\to\infty}
+{\left(1+\frac{1}{n}\right)}^n=e
+\label{eq:euler}
+\end{equation}
+
+ディスプレイ数式は，\verb|\[ ... \]|で囲むと番号なしで表示できます．
+番号を付けたい場合は，\verb|equation|環境を使用します．
+実際に，インライン数式とディスプレイ数式をそれぞれ使って，
+自分で数式を挿入してみましょう．
+
+% ここに自分で数式を挿入する．
+
+\subsection*{キムインライン数式}
+球の表面積は $S=4\pi r^2$ で表される．
+
+\subsection*{キムディスプレイ数式}
+\begin{equation}
+\oint_{S} \vec{E}\cdot \dif\vec{S}
+=\frac{Q}{\varepsilon_0}
+\label{eq:gauss}
+\end{equation}
+
+
+\section*{演習5：図の挿入}
+LaTeXでは，図を挿入することもできます．
+
+\begin{figure}[htbp]
+    \centering
+    \practiceimage[3cm]{1.jpg}
+    \caption{LaTeXで挿入した図の例}\label{fig:custom-practice}
+\end{figure}
+
+画像の挿入は，画像ファイルの場所や拡張子，パッケージ設定などが原因で
+エラーになることがあります．
+エラーが出ても慌てず，エラーメッセージを読みながら一つずつ原因を確認しましょう．
+では，自分で画像を挿入してみましょう．
+
+% ここに画像を挿入する．
+% 分からないときは，画像とともに生成AIへ
+% 「画像を貼るLaTeXのコードを作成」などと質問してもよい．
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=3cm]{1.jpg}
+    \caption{LaTeXで挿入した図の例}\label{fig:practice}
+\end{figure}
+
+
+\section*{演習6：表の挿入}
+LaTeXでは，表を挿入することもできます．
+
+\begin{table}[htbp]
+    \centering
+    \begin{tabular}{ccc}
+        \toprule
+        A & B & C \\
+        \midrule
+        1 & 2 & 3 \\
+        4 & 5 & 6 \\
+        \bottomrule
+    \end{tabular}
+    \caption{LaTeXで挿入した表の例}\label{tab:custom-practice}
+\end{table}
+
+では，自分で5行7列の表を挿入してみましょう．
+
+% ここに表を挿入する．
+% 分からないときは，表の画像とともに生成AIへ
+% 「表を作るLaTeXのコードを作成」などと質問してもよい．
+
+\begin{table}[htbp]
+    \centering
+    \begin{tabular}{cccc}
+        \toprule
+        A & B & C & D \\
+        \midrule
+        1 & 2 & 3 & 4 \\
+        5 & 6 & 7 & 8 \\
+        9 & 10 & 11 & 12 \\
+        \bottomrule
+    \end{tabular}
+    \caption{LaTeXで挿入した表の例}\label{tab:practice}
+\end{table}
+
+\section*{演習7：箇条書き}
+\begin{itemize}
+    \item LaTeX
+    \item Python
+    \item GitHub
+\end{itemize}
+
+では，自分で箇条書きを作成してみましょう．
+
+% ここに箇条書きを作成する．
+
+\begin{itemize}
+    \item キム
+    \item ド
+    \item ホン
+\end{itemize}
+
+\section*{演習8：ソースコードの挿入}
+LaTeXでは，ソースコードもきれいに掲載できます．
+
+\begin{lstlisting}
+#include <stdio.h>
+
+int main(void)
+{
+    for (int i = 0; i < 10; i++) {
+        printf("%d\n", i);
+    }
+
+    return 0;
+}
+\end{lstlisting}
+
+では，自分でソースコードを挿入してみましょう．
+
+% ここにソースコードを挿入する．内容は自由である．
+
+\begin{lstlisting}
+#include <stdio.h>
+
+int main(void)
+{
+    printf("Hello, kim do hoen\n");
+
+    return 0;
+}
+\end{lstlisting}
+
+\section*{演習9：URLの挿入}
+URLを挿入することもできます．
+OpenAIのホームページはこちらです．
+
+\url{https://openai.com}
+
+では，自分で任意のURLを挿入してみましょう．
+
+% ここにURLを挿入する．
+
+\url{https://www.naver.com}
+
+\section*{演習10：参考文献}
+卒業論文や学術論文では，他者の研究や論文を引用した場合，
+必ず参考文献を明記する必要があります．
+
+LaTeXでは，一般的にBibTeXを用いて参考文献を管理します．
+参考文献を追加する手順は，大きく分けて次の3つです．
+
+\subsection*{手順1：\texttt{.bib}ファイルを作成する}
+まず，\texttt{references.bib}という名前のファイルを作成します．
+このファイルには，引用する論文や書籍の情報を記述します．
+例えば，次のように記述します．
+
+\begin{lstlisting}[language={}]
+@inproceedings{he2016resnet,
+  author    = {Kaiming He and others},
+  title     = {Deep Residual Learning for Image Recognition},
+  booktitle = {CVPR},
+  year      = {2016}
+}
+\end{lstlisting}
+
+Google ScholarやIEEE Xploreでは，「BibTeX」を選択するだけで
+この形式を取得できるため，自分で一から入力する必要はほとんどありません．
+
+\subsection*{手順2：本文中で引用する}
+引用したい箇所に，次のように記述します．
+
+\begin{verbatim}
+\cite{he2016resnet}
+\end{verbatim}
+
+例えば，
+
+\begin{verbatim}
+深層学習ではResNetが広く利用されている
+\cite{he2016resnet}．
+\end{verbatim}
+
+と書くと，「深層学習ではResNetが広く利用されている[1]．」のように，
+引用番号が自動で付与されます．
+
+\subsection*{手順3：参考文献一覧を表示する}
+文書の末尾へ，次の2行を追加します．
+
+\begin{verbatim}
+\bibliographystyle{ieeetr}
+\bibliography{references}
+\end{verbatim}
+
+ここで，
+
+\begin{itemize}
+    \item \texttt{ieeetr}：参考文献の表示形式
+    \item \texttt{references}：作成した\texttt{references.bib}の指定
+\end{itemize}
+
+を表しています．
+実際に手順1から手順3までを行うと，本文では次のように表示されます．
+
+「深層学習ではResNetが広く利用されている\cite{he2016resnet}．」
+
+卒業論文では，参考文献の管理にBibTeXを用いることが一般的です．
+今回は演習を省略しますが，研究を進める際には必ず利用する機能です．
+
+\subsection*{発展：2段組で大きな図を挿入する}
+卒業論文では，本文を2段組にし，図やグラフのみページ全体の幅で
+表示することがあります．
+
+その場合は，\verb|figure|の代わりに\verb|figure*|環境を使用します．
+図がページ上部へ自動配置されることを確認するため，後ろにダミーテキストを入れています．
+
+\begin{verbatim}
+\begin{figure*}[t]
+    \centering
+    \includegraphics[width=0.8\textwidth]
+        {1.jpg}
+    \caption{実験結果}
+    \label{fig:result}
+\end{figure*}
+\end{verbatim}
+
+\begin{strip}
+    \centering
+    \begin{minipage}[t]{0.42\textwidth}
+        \centering
+        \includegraphics[width=0.72\linewidth]{1.jpg}
+        \par\smallskip
+
+        \small (a) 画像1
+    \end{minipage}
+    \hspace{0.06\textwidth}
+    \begin{minipage}[t]{0.42\textwidth}
+        \centering
+        \includegraphics[width=0.72\linewidth]{1.jpg}
+        \par\smallskip
+
+        \small (b) 画像2
+    \end{minipage}
+    \captionof{figure}{画像を横並びにした例}\label{fig:images}
+\end{strip}
+
+図\ref{fig:images}では，同じ画像を2枚横に配置し，画像同士の大きさや
+表示位置を比較しやすいレイアウトにしています．横並びの図を使用する場合は，
+各画像の幅を揃え，画像間に適度な余白を設けると見やすくなります．
+
+また，複数の画像を比較する図では，撮影条件や評価項目を統一することが重要です．
+画像の下に短い説明を付けることで，読者は各画像の役割をすぐに把握できます．
+本文では図を掲載するだけでなく，図から読み取れる特徴や比較結果についても
+具体的に説明すると，資料全体の意図がより明確になります．
+
+画像数が増える場合は，一つの画像を過度に小さくせず，必要に応じて図を分けます．
+ページ内の余白，本文との間隔，キャプションの位置を揃えることで，
+情報量が多い場合でも読みやすいレイアウトを維持できます．
+
+% 参考文献一覧は，文書の最後に一度だけ出力する．
+\bibliographystyle{ieeetr}
+\bibliography{references}
+
+\end{document}

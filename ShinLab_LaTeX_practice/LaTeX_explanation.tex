@@ -1,0 +1,916 @@
+\documentclass[a4paper,11pt]{jsarticle}
+
+% ============================================================
+% この文書は pLaTeX + dvipdfmx で組版する資料です。
+% ローカル環境，クラウド環境を問わず，同じエンジン，パッケージ，
+% フォント，外部ファイル，ビルド順序を揃えることで同等の結果を再現できます。
+% 必要に応じてlatexmkrcでビルド条件を固定し，環境間で処理手順を共有します。
+% ============================================================
+
+\usepackage[
+  a4paper,
+  left=22mm,
+  right=22mm,
+  top=22mm,
+  bottom=24mm
+]{geometry}
+
+\usepackage{amsmath,amssymb,mathtools,bm}
+\usepackage[dvipdfmx]{graphicx}
+\usepackage[dvipdfmx]{xcolor}
+\usepackage[dvipdfmx,unicode]{hyperref}
+\usepackage{pxjahyper}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{longtable}
+\usepackage{enumitem}
+\usepackage{listings}
+\usepackage{float}
+\usepackage{caption}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta,positioning,shapes.geometric}
+
+\hypersetup{
+  colorlinks=true,
+  linkcolor=blue!50!black,
+  urlcolor=blue!60!black,
+  citecolor=green!35!black,
+  pdftitle={LaTeXのコンパイルと基本文法},
+  pdfauthor={LaTeX演習資料}
+}
+
+\lstset{
+  basicstyle=\ttfamily\small,
+  frame=single,
+  numbers=left,
+  numberstyle=\tiny\color{gray},
+  backgroundcolor=\color{gray!7},
+  rulecolor=\color{gray!60},
+  breaklines=true,
+  showstringspaces=false,
+  columns=fullflexible,
+  tabsize=2
+}
+
+\setlist[itemize]{leftmargin=2em,topsep=4pt,itemsep=2pt}
+\setlist[enumerate]{leftmargin=2.5em,topsep=4pt,itemsep=2pt}
+\renewcommand{\arraystretch}{1.28}
+\setlength{\arrayrulewidth}{0.45pt}
+
+\newcommand{\code}[1]{\texttt{#1}}
+\newcommand{\vect}[1]{\bm{#1}}
+\DeclareMathOperator{\tr}{tr}
+
+\title{LaTeXのコンパイルと表示例\\
+\large 環境に依存しない理解と実践}
+\author{1MDA1103\\安　炯奎}
+\date{\today}
+
+\begin{document}
+
+\maketitle
+
+
+\tableofcontents
+\clearpage
+
+% ============================================================
+\clearpage
+\section{LaTeXとは何か}
+% ============================================================
+
+LaTeXを理解する際は，\textbf{TeX}，\textbf{LaTeX}，\textbf{コンパイラ}，
+\textbf{TeXディストリビューション}を区別すると分かりやすい．
+
+\begin{description}[style=nextline,leftmargin=3.5cm]
+  \item[TeX]
+  Donald Knuthによって開発された組版システムであり，文字，数式，行，ページを配置する
+  基礎的な処理を担当する．
+
+  \item[LaTeX]
+  TeXの上に構築された文書作成用の仕組みである．
+  利用者は文字の座標を直接指定するのではなく，\code{section}，\code{figure}，
+  \code{equation}などの論理的な命令を記述する．
+
+  \item[TeXエンジン]
+  \code{pdfTeX}，\code{XeTeX}，\code{LuaTeX}，\code{pTeX}，\code{upTeX}など，
+  実際に入力を読み，組版処理を実行するプログラムである．
+
+  \item[LaTeXコンパイラ]
+  日常的には，LaTeX形式を読み込んだエンジンを実行するコマンドを指す．
+  代表例は\code{pdflatex}，\code{xelatex}，\code{lualatex}，\code{platex}である．
+
+  \item[TeXディストリビューション]
+  エンジン，LaTeX本体，パッケージ，フォント，BibTeXなどをまとめた配布物である．
+  代表例はTeX Live，MiKTeX，MacTeXである．
+\end{description}
+
+したがって，LaTeXは単独のアプリケーション名というより，
+複数のエンジン，形式，パッケージ，補助プログラムから構成される文書作成環境である．
+LaTeX本体や対応エンジンの更新情報は，LaTeX Projectの公開資料から確認できる\cite{latex-project-engines}．
+
+% ============================================================
+\addvspace{3\baselineskip}
+\section{LaTeX文書は基本的にどのようにコンパイルされるか}
+% ============================================================
+
+\subsection{最も単純な流れ}
+
+LaTeX文書は，通常，次の流れで処理される．
+
+\begin{figure}[H]
+  \centering
+  \begin{tikzpicture}[
+    node distance=9mm and 8mm,
+    every node/.style={font=\small},
+    box/.style={draw,rounded corners,minimum width=28mm,minimum height=9mm,align=center},
+    arrow/.style={-{Latex[length=2mm]},thick}
+  ]
+    \node[box] (src) {ソース\\\code{main.tex}};
+    \node[box,right=of src] (engine) {LaTeX処理\\エンジン};
+    \node[box,right=of engine] (out) {PDFまたはDVI};
+    \draw[arrow] (src) -- (engine);
+    \draw[arrow] (engine) -- (out);
+  \end{tikzpicture}
+  \caption{LaTeXコンパイルの基本的な流れ}
+  \label{fig:basic-flow}
+\end{figure}
+
+例えば，pdfLaTeXでは次のコマンドを実行する．
+
+\begin{lstlisting}
+pdflatex main.tex
+\end{lstlisting}
+
+処理に成功すると，通常は\code{main.pdf}が生成される．
+一方，伝統的なLaTeXやpLaTeXでは，まずDVIを生成し，その後PDFへ変換する．
+
+\begin{lstlisting}
+platex main.tex
+dvipdfmx main.dvi
+\end{lstlisting}
+
+\clearpage
+\subsection{コンパイル中に行われていること}
+
+大まかには，次の処理が順番に行われる．
+
+\begin{enumerate}
+  \item \code{main.tex}を読み込む．
+  \item \code{documentclass}で指定された文書クラスを読み込む．
+  \item \code{usepackage}で指定されたパッケージを読み込む．
+  \item コマンドやマクロを展開する．
+  \item 段落，数式，図表，ページを組版する．
+  \item PDFまたはDVIを出力する．
+  \item 参照番号などを\code{.aux}，目次を\code{.toc}などの補助ファイルへ保存する．
+\end{enumerate}
+
+\subsection{なぜ複数回コンパイルすることがあるのか}
+
+LaTeXは，文書の前方に書かれた参照から，後方にある図や節の番号を一度で知ることができない．
+そのため，最初の実行で番号を補助ファイルに保存し，次の実行でその情報を読み直す．
+
+\begin{figure}[H]
+  \centering
+  \begin{tikzpicture}[
+    node distance=8mm and 8mm,
+    every node/.style={font=\small},
+    box/.style={draw,rounded corners,minimum width=27mm,minimum height=9mm,align=center},
+    arrow/.style={-{Latex[length=2mm]},thick}
+  ]
+    \node[box] (first) {1回目\\番号を収集};
+    \node[box,right=of first] (aux) {補助ファイル\\\code{.aux}, \code{.toc}};
+    \node[box,right=of aux] (second) {2回目\\番号を反映};
+    \draw[arrow] (first) -- (aux);
+    \draw[arrow] (aux) -- (second);
+  \end{tikzpicture}
+  \caption{相互参照を確定するための複数回コンパイル}
+\end{figure}
+
+参考文献をBibTeXで処理する典型的な順序は次のとおりである．
+
+\begin{lstlisting}
+platex main.tex
+pbibtex main
+platex main.tex
+platex main.tex
+dvipdfmx main.dvi
+\end{lstlisting}
+
+ただし，通常は\code{latexmk}が必要な回数と順序を自動判定するため，
+利用者が毎回すべてのコマンドを手動実行する必要はない\cite{latex2e-crossrefs,latexmk}．
+
+% ============================================================
+\clearpage
+\section{代表的なコンパイル方式と使い分け}
+% ============================================================
+
+コンパイラの選択では，文書クラス，文字コード，フォント，出力経路，投稿先の指定を確認する\cite{overleaf-compiler,latex-project-engines}．
+
+\subsection{方式の比較}
+
+\begin{table}[H]
+  \centering
+  \small
+  \caption{代表的なLaTeXコンパイル方式}
+  \label{tab:compiler-comparison}
+  \begin{tabular}{|>{\raggedright\arraybackslash}p{20mm}
+                  |>{\raggedright\arraybackslash}p{24mm}
+                  |>{\raggedright\arraybackslash}p{47mm}
+                  |>{\raggedright\arraybackslash}p{47mm}|}
+    \hline
+    コマンド & 主な出力 & 長所 & 主な用途・注意点 \\
+    \hline
+    \code{latex} & DVI & 古典的で単純なDVI経路を利用できる & EPSや古いDVIワークフロー，古いテンプレート．通常の新規文書では使用機会が少ない \\
+    \hline
+    \code{pdflatex} & PDF & 高速で安定し，既存パッケージや投稿テンプレートとの互換性が高い & 欧文中心の一般文書，出版社指定テンプレート．システムフォントやUnicodeの扱いには制約がある \\
+    \hline
+    \code{xelatex} & PDF & UTF-8とOpenType/TrueTypeフォントを扱いやすい & 多言語文書，任意のシステムフォントを使う文書．\code{fontspec}を利用する場合 \\
+    \hline
+    \code{lualatex} & PDF & Unicode，現代的フォント，Luaによる拡張に対応する & 新規の多言語文書，高度なフォント処理，Luaを使った自動化や拡張 \\
+    \hline
+    \code{platex} & DVI & 日本語組版の長い実績があり，\code{jsarticle}等との互換性が高い & 日本の大学・学会・出版社がpLaTeXを指定する場合．通常は\code{dvipdfmx}でPDF化する \\
+    \hline
+    \code{uplatex} & DVI & pLaTeX系の日本語組版を保ちながらUnicode範囲を扱いやすい & 日本語中心で，より広い文字集合を扱う文書．テンプレート側の対応確認が必要 \\
+    \hline
+  \end{tabular}
+\end{table}
+
+\subsection{選び方の目安}
+
+\begin{itemize}
+  \item 投稿先や大学からコンパイラを指定されている場合は，その指定を最優先する．
+  \item 欧文中心で，既存テンプレートとの互換性を重視するならpdfLaTeXが無難である．
+  \item Unicode，多言語，OpenTypeフォントを簡単に扱うならXeLaTeXまたはLuaLaTeXを使う．
+  \item 新規のUnicode文書で拡張性を重視するならLuaLaTeXが有力である．
+  \item \code{jsarticle}，\code{jsbook}などを使う既存の日本語資料ではpLaTeXまたはupLaTeXを検討する．
+  \item 古いDVI，EPS，PSTricks中心の資産を維持する場合はLaTeX経路が必要になることがある．
+\end{itemize}
+
+% ============================================================
+\clearpage
+\section{コンパイルに関係する代表的なプログラム}
+% ============================================================
+
+「LaTeXをコンパイルするもの」には複数の種類がある．
+
+\begin{table}[H]
+  \centering
+  \small
+  \caption{LaTeX環境を構成する代表的なプログラム}
+  \begin{tabular}{|>{\raggedright\arraybackslash}p{28mm}
+                  |>{\raggedright\arraybackslash}p{48mm}
+                  |>{\raggedright\arraybackslash}p{64mm}|}
+    \hline
+    分類 & 代表例 & 役割 \\
+    \hline
+    TeXエンジン & pdfTeX，XeTeX，LuaTeX，pTeX，upTeX & マクロ展開，段落分割，数式やページの組版を実行する \\
+    \hline
+    LaTeX実行コマンド & pdflatex，xelatex，lualatex，platex，uplatex & 各エンジンにLaTeX形式を読み込ませて文書を処理する \\
+    \hline
+    DVIドライバ & dvipdfmx，dvips & DVIをPDFまたはPostScriptへ変換する \\
+    \hline
+    自動ビルド & latexmk，arara & 必要なコンパイル回数，BibTeX，索引処理などを自動化する \\
+    \hline
+    参考文献処理 & bibtex，pbibtex，upbibtex，biber & \code{.bib}から参考文献一覧を生成する \\
+    \hline
+    索引処理 & makeindex，mendex & 索引語を並べ替え，索引ファイルを生成する \\
+    \hline
+    ディストリビューション & TeX Live，MiKTeX，MacTeX & エンジン，パッケージ，フォント，補助ツールをまとめて提供する \\
+    \hline
+    エディタ・実行環境 & TeXstudio，TeXworks，VS Code，Overleaf等 & ソース編集，コンパイル操作，PDF表示，エラー確認を支援する \\
+    \hline
+  \end{tabular}
+\end{table}
+
+重要なのは，\textbf{エディタとコンパイラは同じものではない}という点である．
+例えばVS Codeは文章を編集するためのエディタであり，実際のコンパイルには
+ローカルへインストールしたTeX Liveなどを利用する．
+Overleafはエディタとサーバ上のTeX Liveを一体として提供する\cite{overleaf-compiler}．
+
+% ============================================================
+\clearpage
+\section{異なる環境で同じ結果を得るための設定}
+% ============================================================
+
+\subsection{実行環境よりも，ビルド条件を揃えることが重要である}
+
+LaTeX文書は，ローカルPC，大学の演習室，CIサーバ，クラウドサービスなど，
+さまざまな環境で処理できる．ただし，同じ\code{.tex}ファイルを置くだけで，
+必ず同じ結果になるとは限らない．再現性を高めるには，少なくとも次の条件を揃える．
+
+\begin{itemize}
+  \item 使用するコンパイラと処理経路：例として\code{platex -> dvipdfmx}
+  \item TeX Liveなどのディストリビューションと，可能であればその版
+  \item 文書クラス，パッケージ，スタイルファイル
+  \item 使用するフォント
+  \item 画像，\code{.bib}，分割した\code{.tex}などの外部ファイル
+  \item BibTeXや索引処理を含むビルド順序
+\end{itemize}
+
+重要なのは，特定のエディタやサービスを使うことではなく，
+\textbf{どのプログラムを，どの順番で，どの設定によって実行するか}を共有することである\cite{latexmk,overleaf-latexmkrc}．
+
+\subsection{コンパイラ，ドライバ，補助プログラムの関係}
+
+コンパイラと画像・ハイパーリンク用ドライバの指定は一致させる必要がある．
+例えば，次の指定はDVIを経由する処理方式を表している．
+
+\begin{lstlisting}[language={[LaTeX]TeX}]
+\usepackage[dvipdfmx]{graphicx}
+\usepackage[dvipdfmx]{xcolor}
+\usepackage[dvipdfmx]{hyperref}
+\end{lstlisting}
+
+これは\code{pLaTeX -> DVI -> dvipdfmx -> PDF}という経路を前提とする．
+このコードをpdfLaTeXで処理すると，pdfLaTeXはDVIを使わないため，
+\code{Wrong DVI mode driver option}などのエラーが発生することがある．
+pdfLaTeX，XeLaTeX，LuaLaTeX向けの新規文書では，通常はドライバを明示せず，
+パッケージの自動判定に任せる方が簡単である．
+
+pLaTeX文書で参考文献と索引も作成する場合，処理の関係は図\ref{fig:build-sequence}のようになる．
+\code{pbibtex}と\code{mendex}は常に必要なわけではなく，
+参考文献または索引が存在する場合だけ，最初の\code{platex}の後に実行される．
+
+\begin{figure}[H]
+  \centering
+  \begin{tikzpicture}[
+    node distance=7mm and 17mm,
+    every node/.style={font=\small},
+    box/.style={draw,rounded corners,minimum width=43mm,minimum height=11mm,align=center},
+    smallbox/.style={draw,rounded corners,minimum width=39mm,minimum height=11mm,align=center},
+    arrow/.style={-{Latex[length=2mm]},thick}
+  ]
+    \node[box] (config) {\textbf{コンパイラ設定}\\使用する処理方式を選択};
+    \node[box,below=of config] (mk) {\code{latexmk}\\処理順序と再実行を管理};
+    \node[box,below=of mk] (pl1) {\code{platex}\\初回の組版と補助ファイル生成};
+    \node[smallbox,below left=of pl1] (bib) {\code{pbibtex}\\参考文献を生成（必要時）};
+    \node[smallbox,below right=of pl1] (index) {\code{mendex}\\索引を生成（必要時）};
+    \node[box,below=18mm of pl1] (pl2) {\code{platex}\\文献・索引・参照を本文へ反映};
+    \node[box,below=of pl2] (pdf) {\code{dvipdfmx}\\DVIをPDFへ変換};
+
+    \draw[arrow] (config) -- (mk);
+    \draw[arrow] (mk) -- (pl1);
+    \draw[arrow] (pl1) -- (bib);
+    \draw[arrow] (pl1) -- (index);
+    \draw[arrow] (bib) -- (pl2);
+    \draw[arrow] (index) -- (pl2);
+    \draw[arrow] (pl2) -- (pdf);
+  \end{tikzpicture}
+  \caption{pLaTeX文書をPDFにする際の代表的な実行順序}
+  \label{fig:build-sequence}
+\end{figure}
+
+\subsection{手動実行と\code{latexmkrc}による自動化}
+
+参考文献と索引を含む文書を手動で処理する場合，代表的には次のように実行する．
+参考文献がなければ\code{pbibtex}を，索引がなければ\code{mendex}を省略する．
+参照番号が確定するまで，\code{platex}をさらに実行することもある．
+
+\begin{lstlisting}
+platex main.tex
+pbibtex main
+mendex main.idx
+platex main.tex
+platex main.tex
+dvipdfmx main.dvi
+\end{lstlisting}
+
+毎回この順序を手で管理する代わりに，プロジェクト直下へ\code{latexmkrc}を置いて，
+使用するプログラムとPDF生成方式を指定できる．
+
+\begin{lstlisting}
+$pdf_mode = 3;
+$latex = 'platex';
+$bibtex = 'pbibtex';
+$dvipdf = 'dvipdfmx %O -o %D %S';
+$makeindex = 'mendex %O -o %D %S';
+\end{lstlisting}
+
+この設定があれば，利用者は次の一つのコマンドから処理を開始できる．
+\code{latexmk}は補助ファイルの変化を確認し，必要なプログラムと再実行回数を判断する．
+
+\begin{lstlisting}
+latexmk main.tex
+\end{lstlisting}
+
+この方法はエディタに依存しない．TeXstudio，VS Code，JetBrains系IDE，
+コマンドライン，CIなどから同じ\code{latexmk}設定を呼び出せば，
+ビルド条件を共有しやすくなる．
+
+\subsection{Overleafで追加設定が必要になる場合}
+
+Overleafのコンパイラ選択欄には，通常，pdfLaTeX，LaTeX，XeLaTeX，LuaLaTeXが表示されるが，
+pLaTeXとupLaTeXは直接表示されない．そのため，pLaTeX文書ではCompilerを\textbf{LaTeX}に設定し，
+前節と同じ\code{latexmkrc}をプロジェクト直下へ置いて，内部で使用するプログラムを指定する
+\cite{overleaf-japanese,overleaf-latexmkrc}．
+
+これは文書をOverleaf専用に書き換える操作ではない．
+\textbf{他の環境ではコマンドやエディタ設定から指定できるビルド条件を，
+OverleafのUI上でも同じになるように補う操作}である．
+
+\subsection{設定が一致しないと大量のエラーになる理由}
+
+例えば，\code{jsarticle}を使用し，\code{graphicx}，\code{xcolor}，\code{hyperref}に
+\code{dvipdfmx}を指定した文書は，pLaTeX系の処理を前提とする．
+これをpdfLaTeXで処理すると，文書クラスやドライバの不一致が最初に発生し，
+その後のパッケージで\code{Undefined control sequence}などの連鎖エラーが表示されることがある．
+この場合，個々のエラーを順番に直すのではなく，最初にコンパイラと処理経路を確認する．
+
+\subsection{環境を移すときに追加確認すべきこと}
+
+\begin{itemize}
+  \item ファイル名の大文字と小文字を区別する環境がある．
+  \item Main documentまたはルート文書として指定された\code{.tex}ファイルが正しいか確認する．
+  \item TeX Liveの版により，パッケージの版や挙動が変わる場合がある．
+  \item あるPCにだけ存在するフォント，クラス，スタイルファイルは他の環境では利用できない．
+  \item 特殊なビルド手順は\code{latexmkrc}，Makefile，エディタ設定などで明示する．
+\end{itemize}
+
+% ============================================================
+\clearpage
+\section{代表的なLaTeX作成環境と固有の特徴}
+% ============================================================
+
+LaTeX文書は，専用エディタ，汎用IDE，ブラウザ，コマンドラインなどから作成できる．
+ソース編集，コンパイル，PDF確認といった多くの環境に共通する機能はここでは繰り返さず，
+各環境を選ぶ理由になりやすい固有の特徴だけを示す．
+
+\begin{longtable}{|>{\raggedright\arraybackslash}p{34mm}
+                  |>{\raggedright\arraybackslash}p{70mm}
+                  |>{\raggedright\arraybackslash}p{43mm}|}
+  \caption{代表的なLaTeX作成環境の固有の特徴}
+  \label{tab:authoring-environments}\\
+  \hline
+  環境 & その環境に特徴的な点 & 適した利用場面 \\
+  \hline
+  \endfirsthead
+  \hline
+  環境 & その環境に特徴的な点 & 適した利用場面 \\
+  \hline
+  \endhead
+
+  Cloud LaTeX
+  & 日本語LaTeXへの対応を前面に出した国内サービスであり，日本語文書を作るための初期設定を省きやすい．
+    科研費申請書，日本の学会・論文誌，和文書籍など，日本語圏で利用される形式のテンプレートが充実している
+    \cite{cloudlatex-features}．
+  & 日本語文書をすぐに作り始めたい場合，日本国内向けの申請書・論文・書籍テンプレートを利用したい場合． \\
+  \hline
+
+  Overleaf
+  & 複数人の同時編集，コメント，変更履歴など，共同執筆の機能が特に充実している．
+    出版社・学会が公開する多数の投稿テンプレートや，GitHub，Dropbox，Zotero，Mendeley等との連携も特徴である
+    \cite{overleaf-features,overleaf-collaboration}．
+  & 共著者とリアルタイムで執筆・査読する場合，海外誌を含む投稿テンプレートや外部サービス連携を重視する場合． \\
+  \hline
+
+  VS Code + LaTeX Workshop
+  & ビルド手順を「recipe」として細かく定義でき，WSL，Docker，Remote Developmentと組み合わせやすい．
+    プログラム，データ，LaTeXを同じワークスペースで扱えることも特徴である
+    \cite{latex-workshop}．
+  & 研究用コードと論文を同じリポジトリで管理する場合，遠隔・コンテナ環境を使う場合． \\
+  \hline
+
+  JetBrains系IDE + TeXiFy-IDEA
+  & IntelliJ Platformのプロジェクト解析，検査，宣言への移動，構造表示をLaTeXとBibTeXにも適用できる．
+    CLion，PyCharm，IntelliJ IDEAなど普段のIDE内に文書作成を統合できる
+    \cite{texify-idea}．
+  & JetBrains系IDEを普段から使い，ソースコードと論文の移動を減らしたい場合． \\
+  \hline
+
+  TeXworks
+  & 機能を意図的に絞った簡潔な画面を持ち，TeXへの入口を低くすることを目的としている．
+    Windows版TeX LiveやMiKTeXに同梱される構成もあり，導入直後から基本的な流れを確認しやすい
+    \cite{texworks}．
+  & 初めてローカル環境でLaTeXを試す場合，複雑なIDE設定を避けたい場合． \\
+  \hline
+
+  TeXstudio
+  & 表・画像・数式を作るためのアシスタント，参照や文法の詳細な検査，
+    複数のコンパイラや索引・参考文献ツールを組み合わせられる高度なビルド設定が強みである
+    \cite{texstudio}．
+  & LaTeX専用の機能を一つのローカルアプリケーションへ集約したい場合． \\
+  \hline
+
+  コマンドライン + 任意のエディタ
+  & Makefile，\code{latexmkrc}，シェルスクリプト，CI，コンテナを使って，
+    編集画面から独立した再現可能なビルドを構成できる．特定のエディタへ処理手順を閉じ込めない．
+  & 自動テスト，大規模文書，Git中心の運用，独自ツールとの連携を重視する場合． \\
+  \hline
+\end{longtable}
+
+Cloud LaTeXやOverleafなどのクラウド環境には，インターネット接続，コンパイル時間，
+サーバに存在しないフォントやツールを自由に追加しにくいという制約がある．
+一方，ローカル環境にはインストールと更新管理が必要である．
+どちらか一方だけを選ぶ必要はなく，ローカル環境で編集・自動化しながら，
+日本語向けテンプレートの利用にはCloud LaTeX，共同作業や投稿にはOverleafを使うなど，目的に応じて併用できる．
+
+% ============================================================
+\addvspace{3\baselineskip}
+\section{表示例から作ってみるLaTeX}
+% ============================================================
+
+この章ではLaTeXの命令を先に提示しない．
+まず表示例を観察し，同じ結果を得るために必要な文法，環境，パッケージを自分で調べて作成する．
+検索する際は，「LaTeX 見出し」「LaTeX 行列」「LaTeX 図 挿入」のように，
+作りたい要素の名前を組み合わせるとよい．
+
+\subsection{タイトル，目次，見出しを作る}
+
+次のように，文書タイトル，著者，日付，目次，番号付きの見出しを持つ文書を作成してみよう．
+番号を付けない見出しも一つ作り，目次へ入れる場合と入れない場合の違いを確認する．
+
+\begin{center}
+\fbox{\begin{minipage}{0.78\linewidth}
+  \centering
+  {\Large サンプルレポート}\par
+  \vspace{2mm}
+  山田太郎\par
+  \today
+  \vspace{5mm}
+
+  \raggedright
+  {\large\bfseries 目次}\par
+  1 はじめに \dotfill 1\par
+  \hspace{5mm}1.1 背景 \dotfill 1\par
+  2 実験 \dotfill 2\par
+
+  \vspace{5mm}
+  {\Large\bfseries 1 はじめに}\par
+  {\large\bfseries 1.1 背景}\par
+  {\normalsize\bfseries 1.1.1 詳細}\par
+\end{minipage}}
+\end{center}
+
+\subsection{文字の見た目を変える}
+
+次の表示を一つの段落内に再現してみよう．
+どの命令が太字，斜体，下線，等幅文字，文脈に応じた強調を表すかを調べる．
+
+\begin{center}
+\textbf{太字}，\textit{イタリック}，\underline{下線}，
+\texttt{等幅文字}，\emph{強調}
+\end{center}
+
+\subsection{段落と三種類のリストを作る}
+
+空行による段落分けと，記号付き，番号付き，語句説明付きの三種類のリストを作成してみよう．
+リストを入れ子にした場合の表示も確認する．
+
+これは第1段落である．ソース上の単なる改行と，段落を分ける空行の違いを観察する．
+
+これは第2段落である．
+
+\begin{itemize}
+  \item 記号付き項目A
+  \item 記号付き項目B
+\end{itemize}
+
+\begin{enumerate}
+  \item 最初の手順
+  \item 次の手順
+\end{enumerate}
+
+\begin{description}
+  \item[CPU] 中央処理装置
+  \item[RAM] 主記憶として使われるメモリ
+\end{description}
+
+\subsection{数式を作る}
+
+文中の数式，中央に独立して置かれる数式，番号付き数式，複数行で等号を揃えた数式，
+行列をそれぞれ作成してみよう．必要になる数式用パッケージも調べる．
+
+文中では，円の面積を $S=\pi r^2$ のように表示できる．
+
+\[
+  \sum_{k=1}^{n} k = \frac{n(n+1)}{2}
+\]
+
+\begin{equation}
+  \int_0^1 x^2\,dx = \frac{1}{3}
+  \label{eq:exercise-integral}
+\end{equation}
+
+\begin{align}
+  (a+b)^2 &= a^2+2ab+b^2, \\
+  (a-b)^2 &= a^2-2ab+b^2.
+\end{align}
+
+\[
+A=
+\begin{pmatrix}
+  1 & 2 \\
+  3 & 4
+\end{pmatrix}
+\]
+
+\subsection{番号を付けて別の場所から参照する}
+
+節，数式，図，表に番号を付け，本文からその番号を参照してみよう．
+参照先の前後を移動しても番号が自動更新されることを確認する．
+例えば，この文は式\ref{eq:exercise-integral}を参照している．
+
+\subsection{図を配置する}
+
+次のように，図を中央へ配置し，説明文と図番号を付け，本文から参照できる形を作成してみよう．
+外部のPNG，JPEG，PDF画像を一つ用意し，幅と配置候補を変えて結果を比較する．
+
+\begin{figure}[H]
+  \centering
+  \begin{tikzpicture}[node distance=20mm]
+    \node[draw,rounded corners,fill=blue!8] (input) {入力};
+    \node[draw,rounded corners,fill=green!8,right=of input] (process) {処理};
+    \node[draw,rounded corners,fill=orange!12,right=of process] (output) {出力};
+    \draw[-{Latex},thick] (input) -- (process);
+    \draw[-{Latex},thick] (process) -- (output);
+  \end{tikzpicture}
+  \caption{図の表示例}
+  \label{fig:exercise-figure}
+\end{figure}
+
+図\ref{fig:exercise-figure}のような番号付き図を，自分で用意した画像でも作成してみよう．
+
+\subsection{表を作る}
+
+列の左揃え，中央揃え，右揃えを使い分け，すべての行を横線で区切った表を作成してみよう．
+列数，行数，数値を変更し，表番号と説明文も付ける．
+
+\begin{table}[H]
+  \centering
+  \caption{表の表示例}
+  \label{tab:exercise-table}
+  \begin{tabular}{|l|c|r|}
+    \hline
+    手法 & 正解率 & 時間[s] \\
+    \hline
+    A & 0.91 & 12.4 \\
+    \hline
+    B & 0.94 & 15.8 \\
+    \hline
+  \end{tabular}
+\end{table}
+
+本文から表\ref{tab:exercise-table}を参照し，行を追加した後も番号が保たれることを確認する．
+
+\subsection{ソースコード，URL，脚注を表示する}
+
+次のようなソースコード枠，クリックできるURL，ページ下部の脚注を作成してみよう．
+ソースコードでは行番号，言語名，枠，改行方法などを変更して比較する．
+
+\begin{lstlisting}[language=C]
+#include <stdio.h>
+
+int main(void)
+{
+    printf("Hello, LaTeX!\\n");
+    return 0;
+}
+\end{lstlisting}
+
+LaTeX ProjectのWebサイトは\url{https://www.latex-project.org/}である．
+本文には補足用の脚注を置くこともできる\footnote{脚注は通常，ページ下部へ自動配置される．}．
+
+% ============================================================
+\clearpage
+\section{少し特殊な機能の記述例}
+% ============================================================
+
+基本的な表示は前章の例を手掛かりに自分で調べることができる．
+一方，複数ファイルを連携させる機能や，文書全体の構成に関係する機能は，
+最初の形を知っていた方が調査しやすい．ここでは代表的な記述例を示す．
+
+\subsection{参考文献と\code{references.bib}}
+
+参考文献を本文へ直接すべて書く代わりに，書誌情報を\code{references.bib}へ分離して管理できる．
+ファイル名は自由だが，ここでは役割が分かりやすいように\code{references.bib}とする．
+同じ書誌データを複数の論文やレポートから再利用でき，本文側では引用キーだけを指定すればよい．
+
+\subsubsection{\code{references.bib}の記述例}
+
+\begin{lstlisting}
+@article{sample2026,
+  author  = {Taro Yamada},
+  title   = {A Sample Article},
+  journal = {Journal of Examples},
+  year    = {2026},
+  volume  = {1},
+  number  = {1},
+  pages   = {1--10}
+}
+
+@book{latexbook,
+  author    = {Hanako Suzuki},
+  title     = {Introduction to LaTeX},
+  publisher = {Example Press},
+  year      = {2025}
+}
+\end{lstlisting}
+
+\begin{table}[H]
+  \centering
+  \small
+  \caption{BibTeXエントリの主な構成要素}
+  \begin{tabular}{|>{\raggedright\arraybackslash}p{31mm}
+                  |>{\raggedright\arraybackslash}p{48mm}
+                  |>{\raggedright\arraybackslash}p{61mm}|}
+    \hline
+    要素 & 例 & 役割 \\
+    \hline
+    エントリ種別 & \code{@article}，\code{@book}，\code{@inproceedings} & 文献の種類を表す \\
+    \hline
+    引用キー & \code{sample2026} & 本文の\code{cite\{sample2026\}}と対応する識別子 \\
+    \hline
+    フィールド & \code{author}，\code{title}，\code{year}等 & 著者名，題名，発行年などの書誌情報を格納する \\
+    \hline
+    波括弧または引用符 & \code{title = \{...\}} & 各フィールドの値を囲む \\
+    \hline
+  \end{tabular}
+\end{table}
+
+本文では次のように引用キーを指定し，文書末尾で参考文献一覧の形式とファイル名を指定する．
+
+\begin{lstlisting}[language={[LaTeX]TeX}]
+Previous work proposed this method~\cite{sample2026}.
+
+\bibliographystyle{ieeetr}
+\bibliography{references}
+\end{lstlisting}
+
+\clearpage
+\code{bibliography\{references\}}は，拡張子を省略して\code{references.bib}を指定している．
+\code{bibliographystyle}は参考文献一覧の表示形式を指定する．
+pLaTeXでは\code{pbibtex}，upLaTeXでは\code{upbibtex}を使う構成が多い．
+近年の文書では，\code{biblatex}と\code{biber}を使う方式もある．
+利用するテンプレートや投稿先の指定がある場合は，その方式を優先する\cite{overleaf-bibliographies}．
+
+\subsubsection{ファイル配置例}
+
+\begin{lstlisting}
+project/
+|-- main.tex
+|-- references.bib
+|-- latexmkrc
+|-- figures/
+|   `-- sample.png
+|-- src/
+|   `-- main.py
+`-- chapters/
+    |-- introduction.tex
+    `-- method.tex
+\end{lstlisting}
+
+本資料そのものも外部の\code{references.bib}を読み込み，末尾の参考文献一覧を生成している．
+
+\subsection{TikZを使ってLaTeX内で図を描く}
+
+第7章の「入力 $\rightarrow$ 処理 $\rightarrow$ 出力」の図は，外部画像を読み込んだものではなく，
+\code{TikZ}パッケージを使ってLaTeXのソース内で描画している．
+単純なフローチャート，ノードと矢印，幾何図形などは，画像編集ソフトを使わずに作成できる\cite{pgf-tikz-manual}．
+
+まず，プリアンブルでパッケージと必要なライブラリを読み込む．
+
+\begin{lstlisting}[language={[LaTeX]TeX}]
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta,positioning}
+\end{lstlisting}
+
+次のコードで，第7.6節と同じ構造の図を描画できる．
+\code{node distance}は要素間の距離，\code{right=of ...}は配置，
+\code{draw}は枠線，\code{fill}は背景色，\code{draw[-\{Latex\}]}は矢印を表す．
+
+\begin{lstlisting}[language={[LaTeX]TeX}]
+\begin{figure}[tbp]
+  \centering
+  \begin{tikzpicture}[node distance=20mm]
+    \node[draw, rounded corners, fill=blue!8]
+      (input) {入力};
+
+    \node[draw, rounded corners, fill=green!8,
+      right=of input]
+      (process) {処理};
+
+    \node[draw, rounded corners, fill=orange!12,
+      right=of process]
+      (output) {出力};
+
+    \draw[-{Latex}, thick] (input) -- (process);
+    \draw[-{Latex}, thick] (process) -- (output);
+  \end{tikzpicture}
+  \caption{TikZで作成した処理の流れ}
+  \label{fig:tikz-flow}
+\end{figure}
+\end{lstlisting}
+
+ノードの識別名である\code{input}，\code{process}，\code{output}を使って，
+配置関係や矢印の始点・終点を指定している．
+図の形が複雑になる場合は，TikZのライブラリを追加したり，図だけを別の\code{.tex}ファイルへ分離したりできる．
+
+\subsection{二段組でページ全体の幅を使う図}
+
+二段組文書で両方の段をまたぐ図には，通常の\code{figure}ではなく\code{figure*}を使う．
+
+\begin{lstlisting}[language={[LaTeX]TeX}]
+\begin{figure*}[t]
+  \centering
+  \includegraphics[width=0.8\textwidth]{figures/wide.pdf}
+  \caption{A wide figure in a two-column document}
+  \label{fig:wide}
+\end{figure*}
+\end{lstlisting}
+
+\subsection{外部ソースコードを読み込む}
+
+長いプログラムをLaTeX本文へコピーせず，別ファイルから読み込むことができる．
+
+\begin{lstlisting}[language={[LaTeX]TeX}]
+\lstinputlisting[language=Python]{src/main.py}
+\end{lstlisting}
+
+\subsection{独自コマンドを定義する}
+
+文書内で何度も使う表記は独自コマンドにすると，表記を統一し，後から一括変更しやすい．
+
+\begin{lstlisting}[language={[LaTeX]TeX}]
+\newcommand{\vect}[1]{\bm{#1}}
+\newcommand{\R}{\mathbb{R}}
+
+$\vect{x} \in \R^n$
+\end{lstlisting}
+
+\subsection{長い文書を複数ファイルへ分割する}
+
+章ごとにファイルを分け，メイン文書から読み込む構成にできる．
+
+\begin{lstlisting}[language={[LaTeX]TeX}]
+% main.tex
+\begin{document}
+\input{chapters/introduction}
+\input{chapters/method}
+\input{chapters/experiment}
+\end{document}
+\end{lstlisting}
+
+\code{input}は指定したファイルの内容をその位置へ読み込む．
+大規模文書では\code{include}も使われる．
+
+% ============================================================
+\clearpage
+\section{pLaTeX向けの最小テンプレート}
+% ============================================================
+
+次のコードは，pLaTeXとdvipdfmxで日本語文書を作成するための最小例である．
+外部画像や数式用パッケージを使用しないため，\code{main.tex}と
+\code{references.bib}を同じフォルダへ置けば試すことができる．
+ここではタイトル，目次，見出し，本文中の引用，参考文献一覧だけを示す．
+その他の機能は，第7章の表示例と第8章の記述例を手掛かりに各自で調べて追加する．
+
+\begin{lstlisting}[language={[LaTeX]TeX}]
+\documentclass[a4paper,11pt]{jsarticle}
+\usepackage{url}
+
+\title{LaTeX Sample}
+\author{Your Name}
+\date{\today}
+
+\begin{document}
+
+\maketitle
+\tableofcontents
+
+\section{Introduction}
+This is a minimal pLaTeX document.
+For information about LaTeX engines, see~\cite{latex-project-engines}.
+
+\bibliographystyle{ieeetr}
+\bibliography{references}
+
+\end{document}
+\end{lstlisting}
+
+この例では，本文中の\code{cite}と文末の\code{bibliography}が
+\code{references.bib}の引用キー\code{latex-project-engines}に対応している．
+参考文献を含むため，処理には第5章で示した\code{pbibtex}が必要である．
+通常は\code{latexmk}を使えば，必要な再実行も含めて自動処理できる．
+
+% ============================================================
+\addvspace{3\baselineskip}
+\section{エラーを読むときの基本方針}
+% ============================================================
+
+\begin{enumerate}
+  \item ログの最初に出たエラーから確認する．
+  \item 文書クラスとコンパイラが一致しているか確認する．
+  \item \code{dvipdfmx}などのドライバ指定が処理方式と一致しているか確認する．
+  \item 括弧，環境の開始と終了，コマンド名のスペルを確認する．
+  \item ファイル名とパス，大文字・小文字を確認する．
+  \item 一度に多数のエラーが出た場合，最初の一件が原因の連鎖エラーでないか疑う．
+  \item 問題箇所を一時的にコメントアウトし，最小構成まで減らして原因を切り分ける．
+\end{enumerate}
+
+\clearpage
+% ============================================================
+\bibliographystyle{ieeetr}
+\bibliography{references}
+
+\end{document}

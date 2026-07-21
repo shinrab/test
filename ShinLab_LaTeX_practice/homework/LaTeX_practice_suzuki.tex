@@ -1,0 +1,510 @@
+\documentclass[a4paper,twocolumn]{jsarticle}
+% a4jでは画像挿入時に問題が起こる場合があるため，a4paperを使用する．
+
+% ===== 基本 =====
+\usepackage[
+    a4paper,
+    left=2.0cm,
+    right=2.0cm,
+    top=2.0cm,
+    bottom=2.0cm
+]{geometry}
+\usepackage{amsmath,amssymb,mathtools,bm}
+\usepackage[dvipdfmx]{graphicx}
+\usepackage[dvipdfmx]{xcolor}
+\usepackage[dvipdfmx,unicode]{hyperref}
+\usepackage{pxjahyper}
+\usepackage{titlesec}
+\usepackage{wrapfig}
+\usepackage{multicol}
+\usepackage{enumitem}
+\usepackage{listings}
+\usepackage{float}
+\usepackage{caption}
+\usepackage{subcaption}
+
+% ===== TikZ・図 =====
+\usepackage{tikz}
+\usetikzlibrary{positioning}
+\usepackage{pgfplots}
+\pgfplotsset{compat=1.18}
+
+% ===== 化学 =====
+\usepackage[version=4]{mhchem}
+\usepackage{chemfig}
+
+% ===== 回路 =====
+\usepackage{circuitikz}
+
+% ===== アルゴリズム =====
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+
+% ===== ダミーテキスト =====
+% 発展例で図の回り込みを確認するために使用する．実際の文書では不要．
+\usepackage{lipsum}
+
+% ===== 数学補助 =====
+% \numberwithin{equation}{section}
+\renewcommand{\theequation}{\arabic{equation}}
+
+\DeclareMathOperator{\sgn}{sgn}
+\DeclareMathOperator{\tr}{tr}
+\DeclareMathOperator{\diag}{diag}
+
+\newcommand{\dif}{\mathrm{d}}
+\newcommand{\ee}{\mathrm{e}}
+\newcommand{\ii}{\mathrm{i}}
+
+\newcommand{\pd}[2]{\frac{\partial #1}{\partial #2}}
+\newcommand{\pdd}[2]{\frac{\partial^2 #1}{\partial #2^2}}
+\newcommand{\dd}[2]{\frac{\mathrm{d} #1}{\mathrm{d} #2}}
+
+\newcommand{\vect}[1]{\bm{#1}}
+\newcommand{\tensor}[1]{\bm{#1}}
+
+% 画像がまだ配置されていない場合も，文書全体はコンパイルできるようにする．
+% 指定した画像が存在すれば，通常どおりその画像を表示する．
+\newcommand{\practiceimage}[2][\linewidth]{%
+  \IfFileExists{#2}{%
+    \includegraphics[width=#1]{#2}%
+  }{%
+    \fbox{%
+      \parbox[c][28mm][c]{\dimexpr#1-2\fboxsep-2\fboxrule\relax}{%
+        \centering\small
+        画像ファイル\\未配置%
+      }%
+    }%
+  }%
+}
+
+% ===== 見出し設定 =====
+\titleformat{\section}[block]
+  {\normalfont\Large\bfseries}
+  {\thesection}{1em}{}
+
+\titleformat{\subsection}[block]
+  {\normalfont\large\bfseries}
+  {\thesubsection}{1em}{}
+
+\titleformat{\subsubsection}[block]
+  {\normalfont\normalsize\bfseries}
+  {\thesubsubsection}{1em}{}
+
+\titlespacing*{\section}{0pt}{2.0ex plus 0.5ex minus 0.2ex}{0.8ex}
+\titlespacing*{\subsection}{0pt}{1.5ex plus 0.4ex minus 0.2ex}{0.5ex}
+
+\lstset{
+    language=C,
+    basicstyle=\ttfamily\small,
+    numbers=left,
+    numberstyle=\tiny\color{gray},
+    frame=single,
+    rulecolor=\color{black},
+    backgroundcolor=\color{gray!10},
+    breaklines=true,
+    showstringspaces=false,
+    columns=fullflexible,
+    keywordstyle=\color{blue},
+    commentstyle=\color{green!50!black},
+    stringstyle=\color{red},
+    tabsize=4
+}
+
+\setlist[itemize]{topsep=4pt,itemsep=2pt,leftmargin=*}
+\setlist[enumerate]{topsep=4pt,itemsep=2pt,leftmargin=*}
+\captionsetup{font=small}
+\setlength{\columnsep}{8mm}
+\setlength{\emergencystretch}{1em}
+\raggedbottom
+
+\title{%
+LaTeX練習
+% ここに自分で新しいテーマを付けてみる．テーマは自由である．
+}
+% ここを自分の名前に変更する．
+\author{慎研究室 3CDA1109 鈴木 大誠}
+% \date{\today}とすると，コンパイルした日付が入る．
+\date{\today}
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+近年, 音声認識技術や対話型AIの発展により, 人間の音声を扱う技術への注目が高まっている.
+
+しかし, 現在の多くの音声認識システムでは, 発話内容であるテキスト情報を中心に処理しており, 同じ言葉であっても話者の感情や状況によって変化する声の特徴については十分に扱えていない.
+
+実際には, 人間は声の高さや強弱, 抑揚などから感情や状態を無意識に読み取っている.
+
+そこで本研究では, 同一の発話内容に対して現れる音声の違いに着目し, 音声波形やスペクトラム画像から特徴量抽出・分析を行うことで, 感情や発話状態の違いを分類・評価することを目的とする.
+\end{abstract}
+
+
+% 演習3：Abstractの挿入
+% \begin{abstract} ... \end{abstract}を\maketitleの後へ追加する．
+
+\section*{演習1：動作確認}
+GitHubからこの「\texttt{LaTeX\_practice.tex}」をダウンロードし，
+自分のPCでコンパイルしてみましょう．
+正しくコンパイルできれば，PDFが生成されます．
+
+\section*{演習2：テーマの変更}
+タイトルと著者名を自分のものに変更し，\texttt{date}には\verb|\today|を入れて，
+コンパイルしてみましょう．
+
+\section*{演習3：Abstractの挿入}
+Abstractを挿入することで，論文の概要を簡潔にまとめることができます．
+
+\begin{verbatim}
+\begin{abstract}
+ここにAbstractを記述します．
+\end{abstract}
+\end{verbatim}
+
+実際に，このコードを\verb|\maketitle|の後へ挿入してみましょう．
+
+
+
+\section*{演習4：数式の挿入}
+LaTeXでは，数式を美しく記述することができます．
+数式の記述には，インライン数式とディスプレイ数式の2種類があります．
+
+\subsection*{インライン数式}
+円の面積は $S=\pi r^2$ で表される．
+
+オイラーの公式は $e^{i\pi}+1=0$ である．
+
+関数 $f(x)=x^2+2x+1$ を考える．
+
+\subsection*{ディスプレイ数式}
+\begin{equation}
+\int_{0}^{1} x^2\,\dif x=\frac{1}{3}
+\label{eq:integral}
+\end{equation}
+
+\begin{equation}
+A=
+\begin{pmatrix}
+1 & 2\\
+3 & 4
+\end{pmatrix}
+\label{eq:matrix}
+\end{equation}
+
+\begin{equation}
+\lim_{n\to\infty}
+\left(1+\frac{1}{n}\right)^n=e
+\label{eq:euler}
+\end{equation}
+
+ディスプレイ数式は，\verb|\[ ... \]|で囲むと番号なしで表示できます．
+番号を付けたい場合は，\verb|equation|環境を使用します．
+実際に，インライン数式とディスプレイ数式をそれぞれ使って，
+自分で数式を挿入してみましょう．
+
+% ここに自分で数式を挿入する．
+
+\subsection{自分で追加したインライン数式}
+三平方の定理は$a^2 + b^2 = c^2$で表される.
+
+\subsection{自分で追加したディスプレイ数式}
+\begin{equation}
+m = 2595 \log_{10}\left(1+\frac{f}{700}\right)
+\label{eq:mel}
+\end{equation}
+
+Mel尺度は、人間の聴覚特性を考慮した周波数尺度であり、
+周波数$f$[Hz]からMel尺度$m$への変換は式(4)で表される。
+
+\section*{演習5：図の挿入}
+LaTeXでは，図を挿入することもできます．
+
+\begin{figure}[H]
+    \centering
+    \practiceimage[3cm]{figures/LaTeX_practice_figure_1.jpg}
+    \caption{LaTeXで挿入した図の例}
+    \label{fig:practice}
+\end{figure}
+
+画像の挿入は，画像ファイルの場所や拡張子，パッケージ設定などが原因で
+エラーになることがあります．
+エラーが出ても慌てず，エラーメッセージを読みながら一つずつ原因を確認しましょう．
+では，自分で画像を挿入してみましょう．
+
+% ここに画像を挿入する．
+% 分からないときは，画像とともに生成AIへ
+% 「画像を貼るLaTeXのコードを作成」などと質問してもよい．
+
+\subsection{自分で図を挿入する}
+\begin{figure}[htbp]
+    \centering
+    \practiceimage[3cm]{suzuki_001_ag.png}
+    \caption{MelSpectrogramの例}
+    \label{fig:mel}
+\end{figure}
+
+\section*{演習6：表の挿入}
+LaTeXでは，表を挿入することもできます．
+
+\begin{table}[H]
+    \centering
+    \begin{tabular}{|c|c|c|}
+        \hline
+        A & B & C \\
+        \hline
+        1 & 2 & 3 \\
+        4 & 5 & 6 \\
+        \hline
+    \end{tabular}
+    \caption{LaTeXで挿入した表の例}
+    \label{tab:practice}
+\end{table}
+
+では，自分で5行7列の表を挿入してみましょう．
+
+% ここに表を挿入する．
+% 分からないときは，表の画像とともに生成AIへ
+% 「表を作るLaTeXのコードを作成」などと質問してもよい．
+
+\subsection{自分で5行7列の表を挿入する}
+\begin{table}[H]
+    \centering
+    \begin{tabular}{|c|c|c|c|c|c|c|c|}
+      \hline
+      No. & C1 & C2 & C3 & C4 & C5 & C6 & C7 \\
+      \hline
+      R1 & 1 & 2 & 3 & 4 & 5 & 6 & 7 \\
+      R2 & 2 & 4 & 6 & 8 & 10 & 12 & 14 \\
+      R3 & 4 & 8 & 12 & 16 & 20 & 24 & 28 \\
+      R4 & 8 & 16 & 24 & 32 & 40 & 48 & 56 \\
+      R5 & 16 & 32 & 48 & 64 & 80 & 96 & 112 \\
+      \hline
+    \end{tabular}
+    \caption{自分で作成した表}
+    \label{tab:mypractice}
+\end{table}
+
+\section*{演習7：箇条書き}
+\begin{itemize}
+    \item LaTeX
+    \item Python
+    \item GitHub
+\end{itemize}
+
+では，自分で箇条書きを作成してみましょう．
+
+% ここに箇条書きを作成する．
+
+\subsection{自分で箇条書きを作成する}
+\begin{itemize}
+    \item ウマ娘
+    \item Dead by Daylight
+    \item Minecraft
+\end{itemize}
+
+\section*{演習8：ソースコードの挿入}
+LaTeXでは，ソースコードもきれいに掲載できます．
+
+\begin{lstlisting}
+#include <stdio.h>
+
+int main(void)
+{
+    for (int i = 0; i < 10; i++) {
+        printf("%d\n", i);
+    }
+
+    return 0;
+}
+\end{lstlisting}
+
+では，自分でソースコードを挿入してみましょう．
+
+% ここにソースコードを挿入する．内容は自由である．
+
+\subsection{自分でソースコードを挿入する}
+\begin{lstlisting}
+#include <stdio.h>
+
+int main(void){
+  int score = 50;
+
+  if(score >= 60){
+    printf("単位を与えます");
+  }
+  else{
+      printf("落単です");
+    }
+  return 0;
+}
+\end{lstlisting}
+
+\section*{演習9：URLの挿入}
+URLを挿入することもできます．
+OpenAIのホームページはこちらです．
+
+\url{https://openai.com}
+
+では，自分で任意のURLを挿入してみましょう．
+
+% ここにURLを挿入する．
+\subsection{自分でURLを挿入する}
+横浜DeNAベイスターズの公式サイトはこちらです.
+\url{https://www.baystars.co.jp/}
+
+\section*{演習10：参考文献}
+卒業論文や学術論文では，他者の研究や論文を引用した場合，
+必ず参考文献を明記する必要があります．
+
+LaTeXでは，一般的にBibTeXを用いて参考文献を管理します．
+参考文献を追加する手順は，大きく分けて次の3つです．
+
+\subsection*{手順1：\texttt{.bib}ファイルを作成する}
+まず，\texttt{references.bib}という名前のファイルを作成します．
+このファイルには，引用する論文や書籍の情報を記述します．
+例えば，次のように記述します．
+
+\begin{lstlisting}[language={}]
+@inproceedings{he2016resnet,
+  author    = {Kaiming He and others},
+  title     = {Deep Residual Learning for Image Recognition},
+  booktitle = {CVPR},
+  year      = {2016}
+}
+\end{lstlisting}
+
+Google ScholarやIEEE Xploreでは，「BibTeX」を選択するだけで
+この形式を取得できるため，自分で一から入力する必要はほとんどありません．
+
+\subsection*{手順2：本文中で引用する}
+引用したい箇所に，次のように記述します．
+
+\begin{verbatim}
+\cite{he2016resnet}
+\end{verbatim}
+
+例えば，
+
+\begin{verbatim}
+深層学習ではResNetが広く利用されている
+\cite{he2016resnet}．
+\end{verbatim}
+
+と書くと，「深層学習ではResNetが広く利用されている[1]．」のように，
+引用番号が自動で付与されます．
+
+\subsection*{手順3：参考文献一覧を表示する}
+文書の末尾へ，次の2行を追加します．
+
+\begin{verbatim}
+\bibliographystyle{ieeetr}
+\bibliography{references}
+\end{verbatim}
+
+ここで，
+
+\begin{itemize}
+    \item \texttt{ieeetr}：参考文献の表示形式
+    \item \texttt{references}：作成した\texttt{references.bib}の指定
+\end{itemize}
+
+を表しています．
+実際に手順1から手順3までを行うと，本文では次のように表示されます．
+
+「深層学習ではResNetが広く利用されている\cite{he2016resnet}．」
+
+卒業論文では，参考文献の管理にBibTeXを用いることが一般的です．
+今回は演習を省略しますが，研究を進める際には必ず利用する機能です．
+
+\subsection{自分で参考文献を表示する}
+\subsection{手順1}
+\begin{lstlisting}[language={}]
+@article{penumajji2025speech,
+  author  = {Niketa Penumajji},
+  title   = {Deep Learning for Speech Emotion Recognition:
+             A CNN Approach Utilizing Mel Spectrograms},
+  journal = {arXiv preprint arXiv:2503.19677},
+  year    = {2025},
+  note    = {\url{https://arxiv.org/abs/2503.19677}}
+}
+\end{lstlisting}
+
+\subsection{手順2}
+\begin{verbatim}
+私の研究の類似研究論文
+\cite{penumajji2025speech}．
+\end{verbatim}
+
+\subsection{手順3}
+\begin{verbatim}
+\bibliographystyle{ieeetr}
+\bibliography{references}
+\end{verbatim}
+「私の研究の類似研究論文\cite{penumajji2025speech}.」
+
+\subsection*{発展：2段組で大きな図を挿入する}
+卒業論文では，本文を2段組にし，図やグラフのみページ全体の幅で
+表示することがあります．
+
+その場合は，\verb|figure|の代わりに\verb|figure*|環境を使用します．
+図がページ上部へ自動配置されることを確認するため，後ろにダミーテキストを入れています．
+
+\begin{lstlisting}[language={[LaTeX]TeX}]
+\begin{figure*}[t]
+    \centering
+    \includegraphics[width=0.8\textwidth]{graph.pdf}
+    \caption{実験結果}
+    \label{fig:result}
+\end{figure*}
+\end{lstlisting}
+
+\begin{figure*}[t]
+    \centering
+    \begin{subfigure}{0.47\textwidth}
+        \centering
+        \practiceimage[\linewidth]{figures/LaTeX_practice_figure_1.jpg}
+        \caption{画像1}
+        \label{fig:image1}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}{0.47\textwidth}
+        \centering
+        \practiceimage[\linewidth]{figures/LaTeX_practice_figure_2.jpg}
+        \caption{画像2}
+        \label{fig:image2}
+    \end{subfigure}
+    \caption{画像を横並びにした例}
+    \label{fig:images}
+\end{figure*}
+
+\lipsum[2-7]
+
+\subsection{自分で二段組の画像を貼る}
+
+\begin{figure*}[t]
+    \centering
+    \begin{subfigure}{0.47\textwidth}
+        \centering
+        \practiceimage[\linewidth]{suzuki_001_ag.png}
+        \caption{画像1 : suzuki\_001\_ag}
+        \label{fig:image3}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}{0.47\textwidth}
+        \centering
+        \practiceimage[\linewidth]{shio_001_ag.png}
+        \caption{画像2 : shio\_001\_ag}
+        \label{fig:image4}
+    \end{subfigure}
+    \caption{MelSpectrogramを横並びにした例}
+    \label{fig:images2}
+\end{figure*}
+
+% 参考文献一覧は，文書の最後に一度だけ出力する．
+\clearpage
+\bibliographystyle{ieeetr}
+\bibliography{references}
+
+\end{document}
