@@ -1,0 +1,13 @@
+__pycache__/
+*.pyc
+*.db
+*.db-*
+*.pt
+*.pth
+*.pdmodel
+*.pdiparams
+*.jpg
+*.jpeg
+*.png
+.venv/
+.DS_Store
