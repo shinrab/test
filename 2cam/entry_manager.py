@@ -55,6 +55,7 @@ def find_best(feature):
             print(
                 f"[DETAIL] ID={pid} "
                 f"ReID={result['scores']['reid_similarity']} "
+                f"顔={result['scores']['face_similarity']}"
                 f"色={result['scores']['color_score']:.3f} "
                 f"属性={result['scores']['attribute_score']:.3f} "
                 f"総合点={score:.3f}"

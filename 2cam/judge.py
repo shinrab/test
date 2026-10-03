@@ -115,7 +115,10 @@ def judge_pair(entry_person, exit_person):
     entry_person.get("reid"),
     exit_person.get("reid")
     )
-    face_sim = similarity_from_distance(face_dist)
+    face_sim = cosine_similarity(
+        entry_person.get("face"),
+        exit_person.get("face")
+    )
 
     attr_score = attribute_score(
         entry_person.get("attributes", {}),

@@ -50,6 +50,8 @@ def in_exit_roi(bbox):
 # =========================
 def run():
 
+    global EXIT_ROI
+
     init_db()
 
     cap = cv2.VideoCapture(0)
@@ -60,6 +62,8 @@ def run():
 
         if not ret:
             break
+
+        EXIT_ROI = (0, 0, frame.shape[1] - 1, frame.shape[0] - 1)
 
         frame_rgb = cv2.cvtColor(
             frame,

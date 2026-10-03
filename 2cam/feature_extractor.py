@@ -5,12 +5,17 @@ import torchreid
 from PIL import Image
 from datetime import datetime
 from paddle.inference import Config, create_predictor
+from facenet_pytorch import MTCNN, InceptionResnetV1
 
 
 # =========================
 # ReID
 # =========================
 from pathlib import Path
+
+DEBUG_DIR = Path(__file__).resolve().parent / "debug_crops"
+DEBUG_DIR.mkdir(parents=True, exist_ok=True)
+
 
 reid_model = torchreid.models.build_model(
     name="osnet_x1_0",
@@ -31,6 +36,20 @@ torchreid.utils.load_pretrained_weights(
 reid_model.eval()
 
 print("[ReID] Model loaded successfully.")
+# 얼굴 검출 모델
+face_detector = MTCNN(
+    image_size=160,
+    margin=20,
+    keep_all=True,
+    device="cpu"
+)
+
+# 얼굴 특징 추출 모델
+face_model = InceptionResnetV1(
+    pretrained="vggface2"
+).eval()
+
+print("[FACE] Model loaded successfully.")
 
 
 # =========================
@@ -114,6 +133,45 @@ def extract_reid(crop):
 
     return feat
 
+# =========================
+# 얼굴 특징 추출
+# =========================
+def extract_face(crop_img):
+
+    with torch.no_grad():
+        faces, probabilities = face_detector(
+            crop_img,
+            return_prob=True
+        )
+
+        if faces is None or probabilities is None:
+            print("[FACE] 顔が検出されませんでした")
+            return None
+
+        # 다른 사람의 얼굴이 함께 들어온 경우 사용하지 않음
+        if len(faces) != 1:
+            print("[FACE] 複数の顔が検出されました: 使用しない")
+            return None
+
+        probability = float(probabilities[0])
+
+        if not np.isfinite(probability) or probability < 0.95:
+            print("[FACE] 検出信頼度が低い: 使用しない")
+            return None
+
+        feature = face_model(faces).cpu().numpy()[0]
+
+    norm = float(np.linalg.norm(feature))
+
+    if not np.isfinite(feature).all() or norm < 1e-12:
+        print("[FACE] 有効な特徴量ではありません: 使用しない")
+        return None
+
+    feature = feature / norm
+
+    print(f"[FACE] 推出成功, 検出信頼度={probability:.3f}")
+    return feature.tolist()
+
 
 # =========================
 # main
@@ -139,9 +197,15 @@ def extract_person_feature(frame_rgb, bbox):
 
     crop_img = Image.fromarray(crop)
 
+    # 특징 추출에 사용하는 인물 사진 저장
+    filename = datetime.now().strftime("%Y%m%d_%H%M%S_%f") + ".jpg"
+    crop_img.save(DEBUG_DIR / filename)
+    print(f"[CROP] {filename}")
+
     return {
         "attributes": extract_attributes(crop_img),
         "color": extract_color(crop),
         "reid": extract_reid(crop).tolist(),
+        "face": extract_face(crop_img),
         "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     }

@@ -35,7 +35,7 @@ tracker = DeepSort(
 # =========================
 frame_id = 0
 
-DETECT_INTERVAL = 3
+DETECT_INTERVAL = 5
 
 last_dets = []
 

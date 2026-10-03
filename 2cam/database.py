@@ -2,7 +2,7 @@ import sqlite3
 import json
 from datetime import datetime
 
-DB_PATH = "people_log_reid_test.db"
+DB_PATH = "people_log_reid_test_v3.db"
 
 
 # =========================
